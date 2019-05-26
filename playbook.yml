@@ -1,0 +1,49 @@
+---
+- hosts: all
+  
+  tasks:
+#  - name: Ensure git is installed
+#    become: true
+#    apt:
+#      pkg: "git"
+#      state: present
+#    when: ansible_os_family == "Debian"
+  - name: Create GIT directory if doesn't exist
+    file:
+      path: ~/GIT
+      state: directory
+      mode: '0755'
+  - name: Clone GIT myConfig repo
+    git:
+      repo: 'https://github.com/giuaig/myConfigs.git'
+      dest: ~/GIT/myConfigs
+  #BASHRC
+  - name: Copy .bashgit to enable GIT status in PS1
+    get_url:
+      url: https://raw.githubusercontent.com/oyvindstegard/bashgit/master/.bashgit
+      dest: ~/.bashgit
+  - name: Copy .bashrc
+    copy:
+      src: ~/GIT/myConfigs/bashrc-USER
+      dest: ~/.bashrc
+      backup: yes
+      remote_src: yes
+  - name: Source .bashrc
+    shell: source ~/.bashrc
+    args:
+      executable: /bin/bash
+    changed_when: false
+  #VIM
+  - name: Clone vim VUNDLE plugin manager with git
+    git:
+      repo: https://github.com/gmarik/vundle.git
+      dest: ~/.vim/bundle/vundle
+  - name: Copy .vimrc
+    copy: 
+      src: ~/GIT/myConfigs/vimrc-USER
+      dest: ~/.vimrc
+      backup: yes
+      remote_src: yes
+  - name: Install Vim plugins
+    command: "vim +PluginInstall +qall"
+    changed_when: false
